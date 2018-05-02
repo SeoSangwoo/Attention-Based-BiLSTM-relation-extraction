@@ -19,13 +19,11 @@ tf.flags.DEFINE_integer("max_sentence_length", data_helpers.MAX_SENTENCE_LENGTH,
 tf.flags.DEFINE_string("word2vec", None, "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_integer("text_embedding_dim", 300, "Dimensionality of character embedding (default: 128)")
 tf.flags.DEFINE_integer("dist_embedding_dim", 50, "Dimensionality of character embedding (default: 128)")
-tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
-tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
-tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularization lambda (default: 0.0)")
+tf.flags.DEFINE_float("l2_reg_lambda", 1e-5, "L2 regularization lambda (default: 0.0)")
 
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
+tf.flags.DEFINE_integer("batch_size", 32, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("num_epochs", 200, "Number of training epochs (default: 200)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps (default: 100)")
@@ -101,7 +99,8 @@ def train(x_text, dist1, dist2, y):
                 text_vocab_size=len(text_vocab_processor.vocabulary_),
                 text_embedding_size=FLAGS.text_embedding_dim,
                 dist_vocab_size=len(dist_vocab_processor.vocabulary_),
-                dist_embedding_size=FLAGS.dist_embedding_dim
+                dist_embedding_size=FLAGS.dist_embedding_dim,
+                l2_reg_lambda=FLAGS.l2_reg_lambda
            )
 
             # Define Training procedure
@@ -152,7 +151,32 @@ def train(x_text, dist1, dist2, y):
 
             # Initialize all variables
             sess.run(tf.global_variables_initializer())
-
+            if FLAGS.word2vec:
+                # initial matrix with random uniform
+                initW = np.random.uniform(-0.25, 0.25,
+                                          (len(text_vocab_processor.vocabulary_), FLAGS.text_embedding_dim))
+                # load any vectors from the word2vec
+                print("Load word2vec file {0}".format(FLAGS.word2vec))
+                with open(FLAGS.word2vec, "rb") as f:
+                    header = f.readline()
+                    vocab_size, layer1_size = map(int, header.split())
+                    binary_len = np.dtype('float32').itemsize * layer1_size
+                    for line in range(vocab_size):
+                        word = []
+                        while True:
+                            ch = f.read(1).decode('latin-1')
+                            if ch == ' ':
+                                word = ''.join(word)
+                                break
+                            if ch != '\n':
+                                word.append(ch)
+                        idx = text_vocab_processor.vocabulary_.get(word)
+                        if idx != 0:
+                            initW[idx] = np.fromstring(f.read(binary_len), dtype='float32')
+                        else:
+                            f.read(binary_len)
+                sess.run(lstm.W_text.assign(initW))
+                print("Success to load pre-trained word2vec model!\n")
             def train_step(x_batch, y_batch):
                 """
                 A single training step
@@ -162,7 +186,8 @@ def train(x_text, dist1, dist2, y):
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
                     lstm.input_y: y_batch,
-                    lstm.dropout_keep_prob: FLAGS.dropout_keep_prob
+                    lstm.dropout_keep_prob: FLAGS.dropout_keep_prob,
+                    lstm.dropout_keep_prob_lstm: 0.3
                 }
                 _, step, summaries, loss, accuracy = sess.run(
                     [train_op, global_step, train_summary_op, lstm.loss, lstm.accuracy],
@@ -180,7 +205,8 @@ def train(x_text, dist1, dist2, y):
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
                     lstm.input_y: y_batch,
-                    lstm.dropout_keep_prob: 1.0
+                    lstm.dropout_keep_prob: 1.0,
+                    lstm.dropout_keep_prob_lstm: 1.0
                 }
                 step, summaries, loss, accuracy = sess.run(
                     [global_step, dev_summary_op, lstm.loss, lstm.accuracy],

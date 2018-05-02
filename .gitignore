@@ -90,3 +90,5 @@ ENV/
 
 # Tensorboard logs
 logdir/
+
+w2v_model/
