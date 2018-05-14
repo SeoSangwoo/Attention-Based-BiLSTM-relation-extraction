@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def attention(inputs, attention_size, time_major=False, return_alphas=False):
+def attention(inputs, attention_size, pos, time_major=False, return_alphas=False):
     """
     Attention mechanism layer which reduces RNN/Bi-RNN outputs with Attention vector.
 
@@ -46,7 +46,7 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
         In case of Bidirectional RNN, this will be a `Tensor` shaped:
             `[batch_size, cell_fw.output_size + cell_bw.output_size]`.
     """
-
+    print("pos: {}".format(pos.shape))
     if isinstance(inputs, tuple):
         # In case of Bi-RNN, concatenate the forward and the backward RNN outputs.
         inputs = tf.concat(inputs, 2)
@@ -69,8 +69,10 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
 
     # For each of the timestamps its vector of size A from `v` is reduced with `u` vector
     vu = tf.tensordot(v, u_omega, axes=1, name='vu')  # (B,T) shape
-    alphas = tf.nn.softmax(vu, name='alphas')         # (B,T) shape
+    if vu.shape == pos.shape:
+        vu = tf.add(vu, pos)
 
+    alphas = tf.nn.softmax(vu, name='alphas')         # (B,T) shape
     # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
     output = tf.reduce_sum(inputs * tf.expand_dims(alphas, -1), 1)
 

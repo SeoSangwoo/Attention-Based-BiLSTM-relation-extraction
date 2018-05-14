@@ -67,7 +67,7 @@ def train(x_text, dist1, dist2, y, pos):
     print("dist1_vec = {0}".format(dist1_vec.shape))
     print("dist2_vec = {0}".format(dist2_vec.shape))
 
-    x = np.array([list(i) for i in zip(text_vec, dist1_vec, dist2_vec)])
+    x = np.array([list(i) for i in zip(text_vec, dist1_vec, dist2_vec, pos)])
 
     print("x = {0}".format(x.shape))
     print("y = {0}".format(y.shape))
@@ -78,13 +78,16 @@ def train(x_text, dist1, dist2, y, pos):
     shuffle_indices = np.random.permutation(np.arange(len(y)))
     x_shuffled = x[shuffle_indices]
     y_shuffled = y[shuffle_indices]
-    pos_shuffled = pos[shuffle_indices]
 
     # Split train/test set
     # TODO: This is very crude, should use cross-validation
     dev_sample_index = -1 * int(FLAGS.dev_sample_percentage * float(len(y)))
     x_train, x_dev = x_shuffled[:dev_sample_index], x_shuffled[dev_sample_index:]
+
+    print("x_dev: {}!!".format(x_dev.shape))
     x_dev = np.array(x_dev).transpose((1, 0, 2))
+    print("x_dev: {}!!".format(x_dev.shape))
+
     y_train, y_dev = y_shuffled[:dev_sample_index], y_shuffled[dev_sample_index:]
     print("Train/Dev split: {:d}/{:d}\n".format(len(y_train), len(y_dev)))
 
@@ -182,19 +185,28 @@ def train(x_text, dist1, dist2, y, pos):
                 """
                 A single training step
                 """
+             #   print("x_batch[0]: {}!!".format(x_batch[0].shape))
+             #   print("x_batch[3]: {}!!".format(x_batch[3].shape))
+
                 feed_dict = {
                     lstm.input_text: x_batch[0],
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
+                    lstm.pos : x_batch[3],
                     lstm.input_y: y_batch,
                     lstm.dropout_keep_prob: FLAGS.dropout_keep_prob,
                     lstm.dropout_keep_prob_lstm: 0.3
                 }
-                _, step, summaries, loss, accuracy = sess.run(
+                _, step, summaries, loss, accuracy, vu, output_pos  = sess.run(
                     [train_op, global_step, train_summary_op, lstm.loss, lstm.accuracy],
                     feed_dict)
+
                 time_str = datetime.datetime.now().isoformat()
                 print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+                print(len(vu[0]))
+                print(len(vu))
+                print(len(output_pos[0]))
+                print(len(output_pos))
                 train_summary_writer.add_summary(summaries, step)
 
             def dev_step(x_batch, y_batch, writer=None):
@@ -205,17 +217,21 @@ def train(x_text, dist1, dist2, y, pos):
                     lstm.input_text: x_batch[0],
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
+                    lstm.pos : x_batch[3],
                     lstm.input_y: y_batch,
                     lstm.dropout_keep_prob: 1.0,
                     lstm.dropout_keep_prob_lstm: 1.0
                 }
-                step, summaries, loss, accuracy, vu = sess.run(
-                    [global_step, dev_summary_op, lstm.loss, lstm.accuracy, lstm.vu],
+                step, summaries, loss, accuracy, vu, output_pos = sess.run(
+                    [global_step, dev_summary_op, lstm.loss, lstm.accuracy, lstm.vu, lstm.pos],
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
                 print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
                 print(len(vu[0]))
+                print(len(vu))
                 print(vu[0])
+                print(len(output_pos[0]))
+                print(len(output_pos))
                 if writer:
                     writer.add_summary(summaries, step)
 

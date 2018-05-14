@@ -104,8 +104,9 @@ def load_data_and_labels(path):
             d2 += "999 "
         dist1.append(d1)
         dist2.append(d2)
-        pos.append([pos1, pos2])
-
+        spos = np.zeros(MAX_SENTENCE_LENGTH)
+        spos[pos1] = spos[pos2] = 2
+        pos.append(spos)
     # Label Data
     y = df['label']
     labels_flat = y.values.ravel()
