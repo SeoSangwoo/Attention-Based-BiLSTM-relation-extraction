@@ -87,6 +87,7 @@ def load_data_and_labels(path):
     # Position data
     dist1 = []
     dist2 = []
+    pos = []
     for df_idx in range(len(df)):
         sentence = df.iloc[df_idx]['sentence']
         tokens = nltk.word_tokenize(sentence)
@@ -103,6 +104,7 @@ def load_data_and_labels(path):
             d2 += "999 "
         dist1.append(d1)
         dist2.append(d2)
+        pos.append([pos1, pos2])
 
     # Label Data
     y = df['label']
@@ -125,7 +127,7 @@ def load_data_and_labels(path):
     labels = dense_to_one_hot(labels_flat, labels_count)
     labels = labels.astype(np.uint8)
 
-    return x_text, dist1, dist2, labels
+    return x_text, dist1, dist2, labels, pos
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):

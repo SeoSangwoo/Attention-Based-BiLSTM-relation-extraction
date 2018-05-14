@@ -92,3 +92,4 @@ ENV/
 logdir/
 
 w2v_model/
+/runs

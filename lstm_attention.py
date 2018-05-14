@@ -15,7 +15,6 @@ class LSTM:
         self.input_y = tf.placeholder(tf.float32, shape=[None, num_classes], name='input_y')
         self.dropout_keep_prob = tf.placeholder(tf.float32, name='dropout_keep_prob')
         self.dropout_keep_prob_lstm = tf.placeholder(tf.float32, name='dropout_keep_prob')
-
         # Keeping track of l2 regularization loss (optional)
         l2_loss = tf.constant(0.0)
 
@@ -48,7 +47,7 @@ class LSTM:
 
         # Attention layer
         with tf.name_scope('Attention_layer'):
-            attention_output, alphas = attention(self.rnn_outputs, ATTENTION_SIZE, return_alphas=True)
+            attention_output, alphas, self.vu = attention(self.rnn_outputs, ATTENTION_SIZE, return_alphas=True)
             tf.summary.histogram('alphas', alphas)
 
         # Dropout

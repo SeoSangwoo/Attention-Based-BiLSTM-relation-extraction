@@ -41,7 +41,7 @@ for attr, value in sorted(FLAGS.__flags.items()):
 print("")
 
 
-def train(x_text, dist1, dist2, y):
+def train(x_text, dist1, dist2, y, pos):
     # Build vocabulary
     # Example: x_text[3] = "A misty <e1>ridge</e1> uprises from the <e2>surge</e2>."
     # ['a misty ridge uprises from the surge <UNK> <UNK> ... <UNK>']
@@ -78,6 +78,7 @@ def train(x_text, dist1, dist2, y):
     shuffle_indices = np.random.permutation(np.arange(len(y)))
     x_shuffled = x[shuffle_indices]
     y_shuffled = y[shuffle_indices]
+    pos_shuffled = pos[shuffle_indices]
 
     # Split train/test set
     # TODO: This is very crude, should use cross-validation
@@ -208,11 +209,13 @@ def train(x_text, dist1, dist2, y):
                     lstm.dropout_keep_prob: 1.0,
                     lstm.dropout_keep_prob_lstm: 1.0
                 }
-                step, summaries, loss, accuracy = sess.run(
-                    [global_step, dev_summary_op, lstm.loss, lstm.accuracy],
+                step, summaries, loss, accuracy, vu = sess.run(
+                    [global_step, dev_summary_op, lstm.loss, lstm.accuracy, lstm.vu],
                     feed_dict)
                 time_str = datetime.datetime.now().isoformat()
                 print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+                print(len(vu[0]))
+                print(vu[0])
                 if writer:
                     writer.add_summary(summaries, step)
 
@@ -236,8 +239,8 @@ def train(x_text, dist1, dist2, y):
 
 
 def main(argv=None):
-    x_text, dist1, dist2, y = data_helpers.load_data_and_labels("data/train.csv")
-    train(x_text, dist1, dist2, y)
+    x_text, dist1, dist2, y, pos = data_helpers.load_data_and_labels("data/train.csv")
+    train(x_text, dist1, dist2, y, pos)
 
 if __name__ == "__main__":
     tf.app.run()

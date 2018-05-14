@@ -78,4 +78,4 @@ def attention(inputs, attention_size, time_major=False, return_alphas=False):
     if not return_alphas:
         return output
     else:
-        return output, alphas
+        return output, alphas, vu
