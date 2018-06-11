@@ -7,7 +7,7 @@ from attention import attention
 class LSTM:
     def __init__(self, sequence_length, num_classes,
                  text_vocab_size, text_embedding_size, dist_vocab_size, dist_embedding_size,
-                 HIDDEN_SIZE = 800, ATTENTION_SIZE = 100, l2_reg_lambda=0.0):
+                 hidden_size=800, attention_size=100, l2_reg_lambda=0.0):
         # Placeholders for input, output and dropout
         self.input_text = tf.placeholder(tf.int32, shape=[None, sequence_length], name='input_text')
         self.input_dist1 = tf.placeholder(tf.int32, shape=[None, sequence_length], name='input_dist1')
@@ -37,10 +37,11 @@ class LSTM:
                                                   self.dist1_embedded_chars,
                                                   self.dist2_embedded_chars], 2)
 
-        embedding_size = text_embedding_size + 2 * dist_embedding_size
+        # embedding_size = text_embedding_size + 2 * dist_embedding_size
 
         # (Bi-)RNN layer(-s)
-        self.rnn_outputs, _ = bi_rnn(tf.nn.rnn_cell.DropoutWrapper(GRUCell(HIDDEN_SIZE),self.dropout_keep_prob_lstm),  tf.nn.rnn_cell.DropoutWrapper(GRUCell(HIDDEN_SIZE),self.dropout_keep_prob_lstm),
+        self.rnn_outputs, _ = bi_rnn(tf.nn.rnn_cell.DropoutWrapper(GRUCell(hidden_size), self.dropout_keep_prob_lstm),
+                                     tf.nn.rnn_cell.DropoutWrapper(GRUCell(hidden_size), self.dropout_keep_prob_lstm),
                                      inputs=self.embedded_chars_expanded,
                                      dtype=tf.float32)
         print(self.rnn_outputs)
@@ -48,7 +49,7 @@ class LSTM:
 
         # Attention layer
         with tf.name_scope('Attention_layer'):
-            attention_output, alphas, self.vu = attention(self.rnn_outputs, ATTENTION_SIZE, self.pos, return_alphas=True)
+            attention_output, alphas, self.vu = attention(self.rnn_outputs, attention_size, self.pos, return_alphas=True)
             tf.summary.histogram('alphas', alphas)
 
         # Dropout
@@ -57,7 +58,7 @@ class LSTM:
         # Fully connected layer
         with tf.name_scope('Fully_connected_layer'):
             W = tf.Variable(
-                tf.truncated_normal([HIDDEN_SIZE * 2, num_classes], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
+                tf.truncated_normal([hidden_size * 2, num_classes], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
             b = tf.Variable(tf.constant(0., shape=[num_classes]))
             l2_loss += tf.nn.l2_loss(W)
             l2_loss += tf.nn.l2_loss(b)

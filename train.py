@@ -6,14 +6,13 @@ import numpy as np
 import time
 import os
 
-
 # Parameters
 # ==================================================
 
 # Data loading params
 tf.flags.DEFINE_float("dev_sample_percentage", .1, "Percentage of the training data to use for validation")
-tf.flags.DEFINE_integer("max_sentence_length", data_helpers.MAX_SENTENCE_LENGTH, "Max sentence length(containing words count) in train/test data")
-
+tf.flags.DEFINE_integer("max_sentence_length", data_helpers.MAX_SENTENCE_LENGTH,
+                        "Max sentence length(containing words count) in train/test data")
 
 # Model Hyperparameters
 tf.flags.DEFINE_string("word2vec", None, "Word2vec file with pre-trained embeddings (default: None)")
@@ -105,7 +104,7 @@ def train(x_text, dist1, dist2, y, pos):
                 dist_vocab_size=len(dist_vocab_processor.vocabulary_),
                 dist_embedding_size=FLAGS.dist_embedding_dim,
                 l2_reg_lambda=FLAGS.l2_reg_lambda
-           )
+            )
 
             # Define Training procedure
             global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -181,32 +180,33 @@ def train(x_text, dist1, dist2, y, pos):
                             f.read(binary_len)
                 sess.run(lstm.W_text.assign(initW))
                 print("Success to load pre-trained word2vec model!\n")
+
             def train_step(x_batch, y_batch):
                 """
                 A single training step
                 """
-             #   print("x_batch[0]: {}!!".format(x_batch[0].shape))
-             #   print("x_batch[3]: {}!!".format(x_batch[3].shape))
+                #   print("x_batch[0]: {}!!".format(x_batch[0].shape))
+                #   print("x_batch[3]: {}!!".format(x_batch[3].shape))
 
                 feed_dict = {
                     lstm.input_text: x_batch[0],
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
-                    lstm.pos : x_batch[3],
+                    lstm.pos: x_batch[3],
                     lstm.input_y: y_batch,
                     lstm.dropout_keep_prob: FLAGS.dropout_keep_prob,
                     lstm.dropout_keep_prob_lstm: 0.3
                 }
-                _, step, summaries, loss, accuracy, vu, output_pos  = sess.run(
-                    [train_op, global_step, train_summary_op, lstm.loss, lstm.accuracy],
+                _, step, summaries, loss, accuracy, vu, output_pos = sess.run(
+                    [train_op, global_step, train_summary_op, lstm.loss, lstm.accuracy, lstm.vu, lstm.pos],
                     feed_dict)
 
                 time_str = datetime.datetime.now().isoformat()
                 print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
-                print(len(vu[0]))
-                print(len(vu))
-                print(len(output_pos[0]))
-                print(len(output_pos))
+                #                print(len(vu[0]))
+                #               print(len(vu))
+                #                print(len(output_pos[0]))
+                #                print(len(output_pos))
                 train_summary_writer.add_summary(summaries, step)
 
             def dev_step(x_batch, y_batch, writer=None):
@@ -217,7 +217,7 @@ def train(x_text, dist1, dist2, y, pos):
                     lstm.input_text: x_batch[0],
                     lstm.input_dist1: x_batch[1],
                     lstm.input_dist2: x_batch[2],
-                    lstm.pos : x_batch[3],
+                    lstm.pos: x_batch[3],
                     lstm.input_y: y_batch,
                     lstm.dropout_keep_prob: 1.0,
                     lstm.dropout_keep_prob_lstm: 1.0
@@ -257,6 +257,7 @@ def train(x_text, dist1, dist2, y, pos):
 def main(argv=None):
     x_text, dist1, dist2, y, pos = data_helpers.load_data_and_labels("data/train.csv")
     train(x_text, dist1, dist2, y, pos)
+
 
 if __name__ == "__main__":
     tf.app.run()
