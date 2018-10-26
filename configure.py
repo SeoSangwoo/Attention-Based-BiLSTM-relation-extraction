@@ -21,16 +21,16 @@ def parse_args():
     # Model Hyper-parameters
     # Embeddings
     parser.add_argument("--embedding_path", default=None,
-                        type=str, help="Path of pre-trained word embeddings (word2vec)")
-    parser.add_argument("--text_embedding_dim", default=300,
-                        type=int, help="Dimensionality of word embedding (default: 300)")
-    parser.add_argument("--pos_embedding_dim", default=50,
-                        type=int, help="Dimensionality of relative position embedding (default: 50)")
-    # CNN
-    parser.add_argument("--filter_sizes", default="2,3,4,5",
-                        type=str, help="Comma-separated filter sizes (Default: 2,3,4,5)")
-    parser.add_argument("--num_filters", default=128,
-                        type=int, help="Number of filters per filter size (Default: 128)")
+                        type=str, help="Path of pre-trained word embeddings (glove)")
+    parser.add_argument("--embedding_dim", default=100,
+                        type=int, help="Dimensionality of word embedding (default: 100)")
+    parser.add_argument("--emb_dropout_keep_prob", default=0.7,
+                        type=float, help="Dropout keep probability of embedding layer (default: 0.7)")
+    # AttLSTM
+    parser.add_argument("--hidden_size", default=100,
+                        type=int, help="Dimensionality of RNN hidden (default: 100)")
+    parser.add_argument("--rnn_dropout_keep_prob", default=0.7,
+                        type=float, help="Dropout keep probability of RNN (default: 0.7)")
 
     # Misc
     parser.add_argument("--desc", default="",
@@ -41,8 +41,8 @@ def parse_args():
                         type=float, help="L2 regularization lambda (default: 1e-5)")
 
     # Training parameters
-    parser.add_argument("--batch_size", default=20,
-                        type=int, help="Batch Size (default: 20)")
+    parser.add_argument("--batch_size", default=10,
+                        type=int, help="Batch Size (default: 10)")
     parser.add_argument("--num_epochs", default=100,
                         type=int, help="Number of training epochs (Default: 100)")
     parser.add_argument("--display_every", default=10,
