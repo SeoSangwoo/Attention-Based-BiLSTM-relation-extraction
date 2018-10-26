@@ -64,19 +64,14 @@ def load_data_and_labels(path):
         tokens = nltk.word_tokenize(sentence)
         if max_sentence_length < len(tokens):
             max_sentence_length = len(tokens)
-        e1 = tokens.index("e12") - 1
-        e2 = tokens.index("e22") - 1
         sentence = " ".join(tokens)
 
-        data.append([id, sentence, e1, e2, relation])
+        data.append([id, sentence, relation])
 
     print(path)
     print("max sentence length = {}\n".format(max_sentence_length))
 
-    df = pd.DataFrame(data=data, columns=["id", "sentence", "e1", "e2", "relation"])
-
-    pos1, pos2 = get_relative_position(df, FLAGS.max_sentence_length)
-
+    df = pd.DataFrame(data=data, columns=["id", "sentence", "relation"])
     df['label'] = [utils.class2label[r] for r in df['relation']]
 
     # Text Data
@@ -102,28 +97,7 @@ def load_data_and_labels(path):
     labels = dense_to_one_hot(labels_flat, labels_count)
     labels = labels.astype(np.uint8)
 
-    return x_text, labels, pos1, pos2
-
-
-def get_relative_position(df, max_sentence_length):
-    # Position data
-    pos1 = []
-    pos2 = []
-    for df_idx in range(len(df)):
-        sentence = df.iloc[df_idx]['sentence']
-        tokens = nltk.word_tokenize(sentence)
-        e1 = df.iloc[df_idx]['e1']
-        e2 = df.iloc[df_idx]['e2']
-
-        p1 = ""
-        p2 = ""
-        for word_idx in range(len(tokens)):
-            p1 += str((max_sentence_length - 1) + word_idx - e1) + " "
-            p2 += str((max_sentence_length - 1) + word_idx - e2) + " "
-        pos1.append(p1)
-        pos2.append(p2)
-
-    return pos1, pos2
+    return x_text, labels
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):

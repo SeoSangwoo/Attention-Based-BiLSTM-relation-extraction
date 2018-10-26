@@ -1,76 +1,69 @@
 import tensorflow as tf
-from tensorflow.contrib.rnn import GRUCell
-from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as bi_rnn
 from attention import attention
 
 
 class AttLSTM:
-    def __init__(self, sequence_length, num_classes,
-                 text_vocab_size, text_embedding_size, dist_vocab_size, dist_embedding_size,
-                 hidden_size=800, attention_size=100, l2_reg_lambda=0.0):
+    def __init__(self, sequence_length, num_classes, vocab_size, embedding_size,
+                 hidden_size, l2_reg_lambda=0.0):
         # Placeholders for input, output and dropout
         self.input_text = tf.placeholder(tf.int32, shape=[None, sequence_length], name='input_text')
-        self.input_dist1 = tf.placeholder(tf.int32, shape=[None, sequence_length], name='input_dist1')
-        self.input_dist2 = tf.placeholder(tf.int32, shape=[None, sequence_length], name='input_dist2')
-        self.pos = tf.placeholder(tf.float32, shape=[None, sequence_length], name='pos')
         self.input_y = tf.placeholder(tf.float32, shape=[None, num_classes], name='input_y')
+        self.emb_dropout_keep_prob = tf.placeholder(tf.float32, name='emb_dropout_keep_prob')
+        self.rnn_dropout_keep_prob = tf.placeholder(tf.float32, name='rnn_dropout_keep_prob')
         self.dropout_keep_prob = tf.placeholder(tf.float32, name='dropout_keep_prob')
-        self.dropout_keep_prob_lstm = tf.placeholder(tf.float32, name='dropout_keep_prob')
-        # Keeping track of l2 regularization loss (optional)
-        l2_loss = tf.constant(0.0)
 
-        # Embedding layer
-        with tf.device('/cpu:0'), tf.name_scope("text-embedding"):
-            self.W_text = tf.Variable(tf.random_uniform([text_vocab_size, text_embedding_size], -1.0, 1.0),
-                                      name="W_text")
-            self.text_embedded_chars = tf.nn.embedding_lookup(self.W_text, self.input_text)
-        with tf.device('/cpu:0'), tf.name_scope("dist1-embedding"):
-            self.W_dist1 = tf.Variable(tf.random_uniform([dist_vocab_size, dist_embedding_size], -1.0, 1.0),
-                                       name="W_dist1")
-            self.dist1_embedded_chars = tf.nn.embedding_lookup(self.W_dist1, self.input_dist1)
-        with tf.device('/cpu:0'), tf.name_scope("dist2-embedding"):
-            self.W_dist2 = tf.Variable(tf.random_uniform([dist_vocab_size, dist_embedding_size], -1.0, 1.0),
-                                       name="W_dist2")
-            self.dist2_embedded_chars = tf.nn.embedding_lookup(self.W_dist2, self.input_dist2)
+        initializer = tf.keras.initializers.glorot_normal
 
-        self.embedded_chars_expanded = tf.concat([self.text_embedded_chars,
-                                                  self.dist1_embedded_chars,
-                                                  self.dist2_embedded_chars], 2)
+        # Word Embedding Layer
+        with tf.device('/cpu:0'), tf.variable_scope("word-embeddings"):
+            self.W_text = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -0.25, 0.25), name="W_text")
+            self.embedded_chars = tf.nn.embedding_lookup(self.W_text, self.input_text)
 
-        # embedding_size = text_embedding_size + 2 * dist_embedding_size
+        # Dropout for Word Embedding
+        with tf.variable_scope('dropout-embeddings'):
+            self.embedded_chars = tf.nn.dropout(self.embedded_chars, self.emb_dropout_keep_prob)
 
-        # (Bi-)RNN layer(-s)
-        self.rnn_outputs, _ = bi_rnn(tf.nn.rnn_cell.DropoutWrapper(GRUCell(hidden_size), self.dropout_keep_prob_lstm),
-                                     tf.nn.rnn_cell.DropoutWrapper(GRUCell(hidden_size), self.dropout_keep_prob_lstm),
-                                     inputs=self.embedded_chars_expanded,
-                                     dtype=tf.float32)
-        print(self.rnn_outputs)
-        tf.summary.histogram('RNN_outputs', self.rnn_outputs)
+        # Bidirectional LSTM
+        with tf.variable_scope("bi-lstm"):
+            _fw_cell = tf.nn.rnn_cell.LSTMCell(hidden_size, initializer=initializer())
+            fw_cell = tf.nn.rnn_cell.DropoutWrapper(_fw_cell, self.rnn_dropout_keep_prob)
+            _bw_cell = tf.nn.rnn_cell.LSTMCell(hidden_size, initializer=initializer())
+            bw_cell = tf.nn.rnn_cell.DropoutWrapper(_bw_cell, self.rnn_dropout_keep_prob)
+            self.rnn_outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=fw_cell,
+                                                                  cell_bw=bw_cell,
+                                                                  inputs=self.embedded_chars,
+                                                                  sequence_length=self._length(self.input_text),
+                                                                  dtype=tf.float32)
+            self.rnn_outputs = tf.add(self.rnn_outputs[0], self.rnn_outputs[1])
 
-        # Attention layer
-        with tf.name_scope('Attention_layer'):
-            attention_output, alphas, self.vu = attention(self.rnn_outputs, attention_size, self.pos, return_alphas=True)
-            tf.summary.histogram('alphas', alphas)
+        # Attention
+        with tf.variable_scope('attention'):
+            self.attn, self.alphas = attention(self.rnn_outputs)
 
         # Dropout
-        self.drop = tf.nn.dropout(attention_output, self.dropout_keep_prob)
+        with tf.variable_scope('dropout'):
+            self.h_drop = tf.nn.dropout(self.attn, self.dropout_keep_prob)
 
         # Fully connected layer
-        with tf.name_scope('Fully_connected_layer'):
-            W = tf.Variable(
-                tf.truncated_normal([hidden_size * 2, num_classes], stddev=0.1))  # Hidden size is multiplied by 2 for Bi-RNN
-            b = tf.Variable(tf.constant(0., shape=[num_classes]))
-            l2_loss += tf.nn.l2_loss(W)
-            l2_loss += tf.nn.l2_loss(b)
-            self.scores = tf.nn.xw_plus_b(self.drop, W, b, name="scores")
-            self.predictions = tf.argmax(self.scores, 1, name="predictions")
+        with tf.variable_scope('output'):
+            self.logits = tf.layers.dense(self.h_drop, num_classes, kernel_initializer=initializer())
+            self.predictions = tf.argmax(self.logits, 1, name="predictions")
 
         # Calculate mean cross-entropy loss
-        with tf.name_scope("loss"):
-            losses = tf.nn.softmax_cross_entropy_with_logits(logits=self.scores, labels=self.input_y)
-            self.loss = tf.reduce_mean(losses) + l2_reg_lambda * l2_loss
+        with tf.variable_scope("loss"):
+            losses = tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.logits, labels=self.input_y)
+            self.l2 = tf.add_n([tf.nn.l2_loss(v) for v in tf.trainable_variables()])
+            self.loss = tf.reduce_mean(losses) + l2_reg_lambda * self.l2
 
         # Accuracy
-        with tf.name_scope("accuracy"):
+        with tf.variable_scope("accuracy"):
             correct_predictions = tf.equal(self.predictions, tf.argmax(self.input_y, 1))
-            self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, "float"), name="accuracy")
+            self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32), name="accuracy")
+
+    # Length of the sequence data
+    @staticmethod
+    def _length(seq):
+        relevant = tf.sign(tf.abs(seq))
+        length = tf.reduce_sum(relevant, reduction_indices=1)
+        length = tf.cast(length, tf.int32)
+        return length
