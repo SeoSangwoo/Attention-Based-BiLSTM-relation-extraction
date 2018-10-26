@@ -4,7 +4,7 @@ from tensorflow.python.ops.rnn import bidirectional_dynamic_rnn as bi_rnn
 from attention import attention
 
 
-class LSTM:
+class AttLSTM:
     def __init__(self, sequence_length, num_classes,
                  text_vocab_size, text_embedding_size, dist_vocab_size, dist_embedding_size,
                  hidden_size=800, attention_size=100, l2_reg_lambda=0.0):
