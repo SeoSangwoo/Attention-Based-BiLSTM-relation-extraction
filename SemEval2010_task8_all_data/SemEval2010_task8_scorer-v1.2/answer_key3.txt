@@ -1,0 +1,10 @@
+1	Component-Whole(e2,e1)
+2	Other
+3	Instrument-Agency(e2,e1)
+4	Other
+5	Member-Collection(e1,e2)
+6	Other
+7	Cause-Effect(e2,e1)
+8	Entity-Destination(e1,e2)
+9	Content-Container(e1,e2)
+10	Entity-Destination(e1,e2)
