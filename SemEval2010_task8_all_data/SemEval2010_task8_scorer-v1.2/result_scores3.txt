@@ -1,0 +1,116 @@
+!!!WARNING!!! The proposed file contains 2 label(s) of type 'Cause-Effect(e1,e2)', which is NOT present in the key file.
+
+!!!WARNING!!! The proposed file contains 1 label(s) of type 'Message-Topic(e1,e2)', which is NOT present in the key file.
+
+<<< (2*9+1)-WAY EVALUATION (USING DIRECTIONALITY)>>>:
+
+Confusion matrix:
+        C-E2 C-W2 C-C1 E-D1 I-A2 M-C1  _O_ *CE1 *MT1 <-- classified as
+      +---------------------------------------------+ -SUM- skip ACTUAL
+ C-E2 |   0    0    0    0    0    0    0    1    0 |    1    0    1
+ C-W2 |   0    0    0    0    0    0    1    0    0 |    1    0    1
+ C-C1 |   0    0    0    0    0    0    0    0    0 |    0    1    1
+ E-D1 |   0    0    0    1    0    0    0    0    0 |    1    1    2
+ I-A2 |   0    0    0    0    0    0    1    0    0 |    1    0    1
+ M-C1 |   0    0    0    0    1    0    0    0    0 |    1    0    1
+  _O_ |   0    0    0    0    0    0    0    1    1 |    2    1    3
+      +---------------------------------------------+
+ -SUM-    0    0    0    1    1    0    2    2    1      7    3   10
+
+Coverage = 7/10 = 70.00%
+Accuracy (calculated for the above confusion matrix) = 1/7 = 14.29%
+Accuracy (considering all skipped examples as Wrong) = 1/10 = 10.00%
+Accuracy (considering all skipped examples as Other) = 2/10 = 20.00%
+
+Results for the individual relations:
+      Cause-Effect(e2,e1) :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+   Component-Whole(e2,e1) :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+ Content-Container(e1,e2) :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+Entity-Destination(e1,e2) :    P =    1/   1 = 100.00%     R =    1/   2 =  50.00%     F1 =  66.67%
+ Instrument-Agency(e2,e1) :    P =    0/   1 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+ Member-Collection(e1,e2) :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+                   _Other :    P =    0/   2 =   0.00%     R =    0/   3 =   0.00%     F1 =   0.00%
+
+Micro-averaged result (excluding Other):
+P =    1/   2 =  50.00%     R =    1/   7 =  14.29%     F1 =  22.22%
+
+MACRO-averaged result (excluding Other):
+P =  16.67%	R =   8.33%	F1 =  11.11%
+
+
+
+<<< (9+1)-WAY EVALUATION IGNORING DIRECTIONALITY >>>:
+
+Confusion matrix:
+         C-E  C-W  C-C  E-D  I-A  M-C  _O_  *MT <-- classified as
+      +----------------------------------------+ -SUM- skip ACTUAL
+  C-E |   1    0    0    0    0    0    0    0 |    1    0    1
+  C-W |   0    0    0    0    0    0    1    0 |    1    0    1
+  C-C |   0    0    0    0    0    0    0    0 |    0    1    1
+  E-D |   0    0    0    1    0    0    0    0 |    1    1    2
+  I-A |   0    0    0    0    0    0    1    0 |    1    0    1
+  M-C |   0    0    0    0    1    0    0    0 |    1    0    1
+  _O_ |   1    0    0    0    0    0    0    1 |    2    1    3
+      +----------------------------------------+
+ -SUM-    2    0    0    1    1    0    2    1      7    3   10
+
+Coverage = 7/10 = 70.00%
+Accuracy (calculated for the above confusion matrix) = 2/7 = 28.57%
+Accuracy (considering all skipped examples as Wrong) = 2/10 = 20.00%
+Accuracy (considering all skipped examples as Other) = 3/10 = 30.00%
+
+Results for the individual relations:
+             Cause-Effect :    P =    1/   2 =  50.00%     R =    1/   1 = 100.00%     F1 =  66.67%
+          Component-Whole :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+        Content-Container :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+       Entity-Destination :    P =    1/   1 = 100.00%     R =    1/   2 =  50.00%     F1 =  66.67%
+        Instrument-Agency :    P =    0/   1 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+        Member-Collection :    P =    0/   0 =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+                   _Other :    P =    0/   2 =   0.00%     R =    0/   3 =   0.00%     F1 =   0.00%
+
+Micro-averaged result (excluding Other):
+P =    2/   4 =  50.00%     R =    2/   7 =  28.57%     F1 =  36.36%
+
+MACRO-averaged result (excluding Other):
+P =  25.00%	R =  25.00%	F1 =  22.22%
+
+
+
+<<< (9+1)-WAY EVALUATION TAKING DIRECTIONALITY INTO ACCOUNT -- OFFICIAL >>>:
+
+Confusion matrix:
+         C-E  C-W  C-C  E-D  I-A  M-C  _O_  *MT <-- classified as
+      +----------------------------------------+ -SUM- xDIRx skip  ACTUAL
+  C-E |   0    0    0    0    0    0    0    0 |    0     1     0      1
+  C-W |   0    0    0    0    0    0    1    0 |    1     0     0      1
+  C-C |   0    0    0    0    0    0    0    0 |    0     0     1      1
+  E-D |   0    0    0    1    0    0    0    0 |    1     0     1      2
+  I-A |   0    0    0    0    0    0    1    0 |    1     0     0      1
+  M-C |   0    0    0    0    1    0    0    0 |    1     0     0      1
+  _O_ |   1    0    0    0    0    0    0    1 |    2     0     1      3
+      +----------------------------------------+
+ -SUM-    1    0    0    1    1    0    2    1      6     1     3     10
+
+Coverage = 7/10 = 70.00%
+Accuracy (calculated for the above confusion matrix) = 1/7 = 14.29%
+Accuracy (considering all skipped examples as Wrong) = 1/10 = 10.00%
+Accuracy (considering all skipped examples as Other) = 2/10 = 20.00%
+
+Results for the individual relations:
+             Cause-Effect :    P =    0/(   1 +   1) =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+          Component-Whole :    P =    0/(   0 +   0) =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+        Content-Container :    P =    0/(   0 +   0) =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+       Entity-Destination :    P =    1/(   1 +   0) = 100.00%     R =    1/   2 =  50.00%     F1 =  66.67%
+        Instrument-Agency :    P =    0/(   1 +   0) =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+        Member-Collection :    P =    0/(   0 +   0) =   0.00%     R =    0/   1 =   0.00%     F1 =   0.00%
+                   _Other :    P =    0/(   2 +   0) =   0.00%     R =    0/   3 =   0.00%     F1 =   0.00%
+
+Micro-averaged result (excluding Other):
+P =    1/   4 =  25.00%     R =    1/   7 =  14.29%     F1 =  18.18%
+
+MACRO-averaged result (excluding Other):
+P =  16.67%	R =   8.33%	F1 =  11.11%
+
+
+
+<<< The official score is (9+1)-way evaluation with directionality taken into account: macro-averaged F1 = 11.11% >>>

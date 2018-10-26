@@ -1,0 +1,4 @@
+7	Other
+14	Cause-Effect(e2,e1)
+23	Cause-Effect(e1,e2)
+27	Cause-Effect(e2,e1)

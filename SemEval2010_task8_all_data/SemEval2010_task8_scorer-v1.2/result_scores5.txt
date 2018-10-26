@@ -1,0 +1,80 @@
+!!!WARNING!!! The proposed file contains 1 label(s) of type '_Other', which is NOT present in the key file.
+
+<<< (2*9+1)-WAY EVALUATION (USING DIRECTIONALITY)>>>:
+
+Confusion matrix:
+        C-E1 C-E2  _O_ <-- classified as
+      +---------------+ -SUM- skip ACTUAL
+ C-E1 |   1    1    0 |    2    1    3
+ C-E2 |   0    1    1 |    2    1    3
+      +---------------+
+ -SUM-    1    2    1      4    2    6
+
+Coverage = 4/6 = 66.67%
+Accuracy (calculated for the above confusion matrix) = 2/4 = 50.00%
+Accuracy (considering all skipped examples as Wrong) = 2/6 = 33.33%
+Accuracy (considering all skipped examples as Other) = 2/6 = 33.33%
+
+Results for the individual relations:
+      Cause-Effect(e1,e2) :    P =    1/   1 = 100.00%     R =    1/   3 =  33.33%     F1 =  50.00%
+      Cause-Effect(e2,e1) :    P =    1/   2 =  50.00%     R =    1/   3 =  33.33%     F1 =  40.00%
+
+Micro-averaged result (excluding Other):
+P =    2/   3 =  66.67%     R =    2/   6 =  33.33%     F1 =  44.44%
+
+MACRO-averaged result (excluding Other):
+P =  75.00%	R =  33.33%	F1 =  45.00%
+
+
+
+<<< (9+1)-WAY EVALUATION IGNORING DIRECTIONALITY >>>:
+
+Confusion matrix:
+         C-E  _O_ <-- classified as
+      +----------+ -SUM- skip ACTUAL
+  C-E |   3    1 |    4    2    6
+      +----------+
+ -SUM-    3    1      4    2    6
+
+Coverage = 4/6 = 66.67%
+Accuracy (calculated for the above confusion matrix) = 3/4 = 75.00%
+Accuracy (considering all skipped examples as Wrong) = 3/6 = 50.00%
+Accuracy (considering all skipped examples as Other) = 3/6 = 50.00%
+
+Results for the individual relations:
+             Cause-Effect :    P =    3/   3 = 100.00%     R =    3/   6 =  50.00%     F1 =  66.67%
+
+Micro-averaged result (excluding Other):
+P =    3/   3 = 100.00%     R =    3/   6 =  50.00%     F1 =  66.67%
+
+MACRO-averaged result (excluding Other):
+P = 100.00%	R =  50.00%	F1 =  66.67%
+
+
+
+<<< (9+1)-WAY EVALUATION TAKING DIRECTIONALITY INTO ACCOUNT -- OFFICIAL >>>:
+
+Confusion matrix:
+         C-E  _O_ <-- classified as
+      +----------+ -SUM- xDIRx skip  ACTUAL
+  C-E |   2    1 |    3     1     2      6
+      +----------+
+ -SUM-    2    1      3     1     2      6
+
+Coverage = 4/6 = 66.67%
+Accuracy (calculated for the above confusion matrix) = 2/4 = 50.00%
+Accuracy (considering all skipped examples as Wrong) = 2/6 = 33.33%
+Accuracy (considering all skipped examples as Other) = 2/6 = 33.33%
+
+Results for the individual relations:
+             Cause-Effect :    P =    2/(   2 +   1) =  66.67%     R =    2/   6 =  33.33%     F1 =  44.44%
+
+Micro-averaged result (excluding Other):
+P =    2/   3 =  66.67%     R =    2/   6 =  33.33%     F1 =  44.44%
+
+MACRO-averaged result (excluding Other):
+P =  66.67%	R =  33.33%	F1 =  44.44%
+
+
+
+<<< The official score is (9+1)-way evaluation with directionality taken into account: macro-averaged F1 = 44.44% >>>

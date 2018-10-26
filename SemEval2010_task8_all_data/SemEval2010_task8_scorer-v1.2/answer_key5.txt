@@ -1,0 +1,6 @@
+7	Cause-Effect(e2,e1)
+14	Cause-Effect(e2,e1)
+23	Cause-Effect(e1,e2)
+27	Cause-Effect(e1,e2)
+32	Cause-Effect(e2,e1)
+39	Cause-Effect(e1,e2)

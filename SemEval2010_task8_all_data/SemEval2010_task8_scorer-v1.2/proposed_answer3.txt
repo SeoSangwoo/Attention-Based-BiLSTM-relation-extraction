@@ -1,0 +1,7 @@
+10	Entity-Destination(e1,e2)
+6	Message-Topic(e1,e2)
+7	Cause-Effect(e1,e2)
+1	Other
+5	Instrument-Agency(e2,e1)
+3	Other
+2	Cause-Effect(e1,e2)
