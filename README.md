@@ -74,7 +74,7 @@ $ python eval.py --checkpoint_dir "runs/1523902663/checkpoints/"
 
 
 ## Reference
-* **Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification** (ACL 2016), P Zhou et al. [[paper]](http://www.aclweb.org/anthology/C14-1220)
+* **Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification** (ACL 2016), P Zhou et al. [[paper]](http://www.aclweb.org/anthology/P16-2034)
 * roomylee's cnn-relation-extraction repository [[github]](https://github.com/roomylee/cnn-relation-extraction)
 
 
